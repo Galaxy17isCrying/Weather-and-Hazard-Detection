@@ -1,0 +1,259 @@
+:root {
+    --sun: #ff9f1c;
+    --ember: #e8590c;
+    --cream: #fff3dc;
+    --ink: #3b1f0b;
+    --panel: #ffe2b0;
+    --line: #3b1f0b
+}
+
+body {
+    background: var(--sun);
+    color: var(--ink);
+    font-family: 'VT323', monospace;
+    font-size: 1.35rem
+}
+
+h1,
+h2 {
+    font-family: 'Press Start 2P', monospace;
+    line-height: 1.4
+}
+
+h1 {
+    font-size: 1.1rem;
+    margin: 0
+}
+
+h2 {
+    font-size: .75rem;
+    margin-bottom: .8rem
+}
+
+.bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: .8rem 1.2rem;
+    background: var(--ember);
+    color: var(--cream);
+    border-bottom: 4px solid var(--line)
+}
+
+.bar form {
+    flex: 1;
+    min-width: 220px
+}
+
+input,
+select {
+    font-family: inherit;
+    font-size: 1.2rem !important;
+    border: 3px solid var(--line) !important;
+    border-radius: 0 !important;
+    background: var(--cream) !important
+}
+
+.px,
+.btn-px {
+    font-family: 'Press Start 2P', monospace;
+    font-size: .65rem;
+    background: var(--ink);
+    color: var(--cream);
+    border: 3px solid var(--line);
+    border-radius: 0;
+    box-shadow: 3px 3px 0 #0006
+}
+
+.px:hover {
+    background: #5a3114;
+    color: #fff
+}
+
+.panel {
+    background: var(--panel);
+    border: 4px solid var(--line);
+    box-shadow: 6px 6px 0 var(--line);
+    padding: 1rem
+}
+
+.muted {
+    opacity: .7
+}
+
+.now {
+    display: flex;
+    align-items: center;
+    gap: 1rem
+}
+
+.now .temp {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 2rem
+}
+
+.now svg {
+    width: 112px;
+    height: 112px;
+    image-rendering: pixelated;
+    flex: none
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .2rem 1rem;
+    margin-top: .8rem
+}
+
+.daily {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: .6rem
+}
+
+.day {
+    background: var(--cream);
+    border: 3px solid var(--line);
+    padding: .4rem;
+    text-align: center
+}
+
+.day svg {
+    width: 56px;
+    height: 56px
+}
+
+#saved li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px dashed var(--line);
+    padding: .2rem 0
+}
+
+#saved a {
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: underline
+}
+
+#saved button {
+    background: none;
+    border: 0;
+    font-size: 1.2rem;
+    color: var(--ember)
+}
+
+#map {
+    height: 560px;
+    border: 4px solid var(--line)
+}
+
+.list-group-item {
+    font-family: inherit;
+    border-radius: 0;
+    border: 3px solid var(--line);
+    background: var(--cream);
+    cursor: pointer
+}
+
+.sw {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--line);
+    margin-right: 6px;
+    vertical-align: middle
+}
+
+:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px
+}
+
+@media(max-width:576px) {
+    .now {
+        flex-direction: column;
+        text-align: center
+    }
+}
+
+.tabs {
+    display: flex;
+    gap: .4rem
+}
+
+.tabs a {
+    font-family: 'Press Start 2P', monospace;
+    font-size: .6rem;
+    color: var(--cream);
+    text-decoration: none;
+    padding: .6rem .8rem;
+    border: 3px solid transparent
+}
+
+.tabs a.on {
+    background: var(--ink);
+    border-color: var(--line)
+}
+
+.rain {
+    display: flex;
+    gap: .8rem;
+    align-items: center;
+    background: var(--cream);
+    border: 3px solid var(--line);
+    padding: .6rem;
+    margin-top: .8rem
+}
+
+.rain .pct {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 1.3rem;
+    color: #2b7de9
+}
+
+.hourly {
+    display: flex;
+    gap: .3rem;
+    overflow-x: auto;
+    padding-bottom: .4rem
+}
+
+.hr {
+    min-width: 52px;
+    text-align: center;
+    font-size: 1.1rem
+}
+
+.bar-wrap {
+    height: 70px;
+    background: var(--cream);
+    border: 2px solid var(--line);
+    display: flex;
+    align-items: flex-end
+}
+
+.bar-fill {
+    width: 100%;
+    background: #2b7de9
+}
+
+.layer {
+    padding: .4rem 0;
+    border-bottom: 2px dashed var(--line)
+}
+
+.layer:last-child {
+    border: 0
+}
+
+.layer a {
+    color: var(--ink)
+}
+
+#check ul li {
+    padding: .15rem 0
+}

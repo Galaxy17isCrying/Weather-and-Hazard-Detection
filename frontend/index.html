@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#062a2c">
+  <meta name="description" content="A live weather dashboard with a pixel-art look.">
+  <title>Sunbeam — Weather Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="weather-ui/css/style.css">
+  <link rel="stylesheet" href="weather-ui/css/pixel-weather.css">
+  <link rel="stylesheet" href="weather-ui/css/responsive.css">
+  <script src="icons.js" defer></script>
+  <script src="common.js?v=20261021-search-2" defer></script>
+  <script src="weather-ui/js/weather-ui.js" defer></script>
+  <script src="weather-ui/js/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand-mark" href="#dashboard" aria-label="Sunbeam home">
+        <span class="brand-sun" aria-hidden="true"></span>
+      </a>
+      <nav class="side-nav" aria-label="Dashboard sections">
+        <button class="nav-button is-active" type="button" data-target="dashboard" aria-label="Dashboard" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg>
+        </button>
+        <button class="nav-button" type="button" data-target="hourly-section" aria-label="Hourly forecast">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v3M12 19v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17m10-10 2.1-2.1"/><circle cx="12" cy="12" r="5"/></svg>
+        </button>
+        <button class="nav-button" type="button" data-target="atmosphere" aria-label="Atmosphere">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C9 7 6 10.2 6 14a6 6 0 0 0 12 0c0-3.8-3-7-6-12Z"/><path d="M9 15a3 3 0 0 0 3 3"/></svg>
+        </button>
+      </nav>
+      <button class="profile-button" type="button" aria-label="Demo profile">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      </button>
+    </aside>
+
+    <main class="dashboard" id="dashboard">
+      <section class="primary-column" aria-label="Current weather">
+        <header class="topbar">
+          <div class="eyebrow">YOUR LITTLE WEATHER WINDOW</div>
+          <div class="topbar-right">
+            <a class="hazard-link" href="map.html">Hazard map <span aria-hidden="true">↗</span></a>
+            <form id="search" class="location-search" role="search">
+              <label class="visually-hidden" for="q">Search a city, country, or location</label>
+              <input id="q" type="search" placeholder="Search a city or country" autocomplete="off" aria-controls="results" aria-haspopup="listbox">
+              <button type="submit" aria-label="Search or go to the best city match" title="Search or open the best match">⌕</button>
+              <div id="results" class="search-results" role="listbox" aria-live="polite"></div>
+            </form>
+            <div class="unit-switch" role="group" aria-label="Temperature units">
+              <button type="button" class="unit-button" data-unit="metric" aria-pressed="true">°C</button>
+              <button type="button" class="unit-button" data-unit="imperial" aria-pressed="false">°F</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="current-weather">
+          <div class="location-block">
+            <p class="eyebrow">CURRENT LOCATION</p>
+            <h2 class="location-name" id="place">Loading location…</h2>
+            <p class="local-time" id="local-time">Loading local time…</p>
+            <p class="weather-message" id="weather-message" role="status"></p>
+          </div>
+
+          <div class="hero-weather">
+            <div class="hero-copy">
+              <p class="weather-kicker">A little look outside</p>
+              <div class="hero-temp" id="current-temp">--<span>°</span><small class="hero-unit" id="current-unit">C</small></div>
+              <h1 class="condition" id="current-condition">Loading weather…</h1>
+              <p class="high-low">H: <span id="today-high">--</span><span class="separator">·</span>L: <span id="today-low">--</span></p>
+            </div>
+            <div class="hero-art" id="hero-art" aria-label="Pixel art partly cloudy weather">
+              <div class="sprite sprite-partly" id="hero-icon" aria-hidden="true"></div>
+              <span class="art-spark spark-one" aria-hidden="true">✦</span>
+              <span class="art-spark spark-two" aria-hidden="true">✧</span>
+            </div>
+          </div>
+
+          <section class="hourly-section" id="hourly-section" aria-labelledby="hourly-title">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">THE DAY, IN LITTLE MOMENTS</p>
+                <h2 id="hourly-title">Hourly forecast</h2>
+              </div>
+              <span class="section-note">NEXT 5 HOURS</span>
+            </div>
+            <div class="hourly-list" id="hourly-list" aria-label="Select an hour to view its forecast"></div>
+          </section>
+
+          <footer class="dashboard-footer">
+            <span class="footer-spark" aria-hidden="true">✳</span>
+            <span class="footer-right">SUNBEAM <span>·</span> OPEN-METEO FORECAST</span>
+            <button class="save-place-button" id="savebtn" type="button">＋ Save this place</button>
+            <span id="action-note" role="status"></span>
+          </footer>
+          <details class="saved-places">
+            <summary>Saved places <span id="saved-count">0</span></summary>
+            <ul id="saved" class="saved-list"><li>Loading saved places…</li></ul>
+          </details>
+        </section>
+      </section>
+
+      <aside class="insights-panel" aria-label="Forecast and atmosphere">
+        <div class="panel-topline">
+          <div>
+            <p class="eyebrow">AHEAD IN THE WEEK</p>
+            <h2>7-day forecast</h2>
+          </div>
+          <span class="mini-weather-mark" aria-hidden="true">✳</span>
+        </div>
+        <div class="week-list" id="week-list"></div>
+
+        <section class="atmosphere-section" id="atmosphere" aria-labelledby="atmosphere-title">
+          <div class="section-heading compact">
+            <div>
+              <p class="eyebrow">THE AIR AROUND YOU</p>
+              <h2 id="atmosphere-title">Atmosphere</h2>
+            </div>
+            <span class="live-note"><span class="status-dot"></span> RIGHT NOW</span>
+          </div>
+
+          <div class="stat-grid">
+            <article class="stat-card uv-card">
+              <div class="stat-icon sun-symbol" aria-hidden="true">✳</div>
+              <p class="stat-label">UV index</p>
+              <div class="stat-main"><span id="uv-value">—</span><span class="stat-category" id="uv-category">Loading</span></div>
+              <div class="uv-meter" aria-label="UV index level"><span id="uv-meter-fill"></span></div>
+            </article>
+            <article class="stat-card wind-card">
+              <div class="stat-icon wind-symbol" aria-hidden="true">〰</div>
+              <p class="stat-label">Wind status</p>
+              <div class="stat-main"><span id="wind-value">—</span><span class="wind-unit" id="wind-unit">km/h</span></div>
+              <p class="stat-caption">Direction <span id="wind-direction">—</span> <span class="direction-arrow" id="wind-arrow"></span></p>
+            </article>
+          </div>
+
+          <article class="moon-card">
+            <div class="moon-copy">
+              <p class="stat-label">Lunar phase</p>
+              <h3 id="moon-phase">Illustrative phase</h3>
+              <p class="stat-caption" id="moon-illumination">Moon details are not live</p>
+            </div>
+            <div class="pixel-moon" aria-label="Waxing crescent moon" role="img"><span></span></div>
+            <span class="moon-stars" aria-hidden="true">✧</span>
+          </article>
+
+          <div class="micro-stats">
+            <article class="micro-stat">
+              <span class="micro-icon" aria-hidden="true">▤</span>
+              <p class="stat-label">Pressure</p>
+              <strong><span id="pressure-value">—</span> <small>hPa</small></strong>
+            </article>
+            <article class="micro-stat">
+              <span class="micro-icon droplet-icon" aria-hidden="true">◒</span>
+              <p class="stat-label">Humidity</p>
+              <strong><span id="humidity-value">—</span><small>%</small></strong>
+            </article>
+            <article class="micro-stat">
+              <span class="micro-icon" aria-hidden="true">◉</span>
+              <p class="stat-label">Visibility</p>
+              <strong><span id="visibility-value">—</span><small>km</small></strong>
+            </article>
+          </div>
+          <p class="demo-disclaimer">Forecast values are live. Moon phase, pressure and visibility are not provided here.</p>
+        </section>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>

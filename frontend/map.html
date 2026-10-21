@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e8590c">
+  <title>Sunbeam · Hazard map</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="map.css">
+</head>
+<body class="map-page">
+  <header class="bar map-bar">
+    <a class="map-brand" href="index.html">Sunbeam</a>
+    <nav class="tabs" aria-label="Main navigation">
+      <a href="index.html">Weather</a>
+      <a href="map.html" class="on" aria-current="page">Hazard map</a>
+    </nav>
+    <form id="search" class="map-search" role="search">
+      <label class="visually-hidden" for="q">Search a city, region, or country</label>
+      <input id="q" type="search" placeholder="Search a city, region, or country" aria-label="Search for a city, region, or country" autocomplete="off" aria-controls="results" aria-haspopup="listbox">
+      <button class="btn px" type="submit" title="Search or open the best match">Search</button>
+    </form>
+    <div id="results" class="map-search-results" role="listbox" aria-live="polite"></div>
+    <select id="units" class="map-units" aria-label="Weather units">
+      <option value="metric">°C · km/h</option>
+      <option value="imperial">°F · mph</option>
+    </select>
+  </header>
+
+  <main class="map-content">
+    <section class="map-intro">
+      <div>
+        <p class="map-kicker">SUNBEAM FIELD GUIDE</p>
+        <h1>Hazard &amp; rainfall map</h1>
+        <p>Explore rainfall products and mapped hazard layers around a location. Search for a city, region, or country, or select a point on the map.</p>
+      </div>
+      <a class="official-link" href="https://noah.up.edu.ph/weather-updates/rainfall-contour" target="_blank" rel="noopener noreferrer">
+        UP NOAH rainfall updates <span aria-hidden="true">↗</span>
+      </a>
+    </section>
+
+    <div class="map-layout">
+      <section class="map-card" aria-labelledby="map-title">
+        <div class="map-card-heading">
+          <div>
+            <p class="map-kicker">WORLDWIDE SEARCH · PHILIPPINE RAINFALL</p>
+            <h2 id="map-title">Explore an area</h2>
+          </div>
+          <span class="map-badge"><span></span> Map ready</span>
+        </div>
+        <p class="map-instruction">Click or tap the map to check the selected location against enabled layers.</p>
+        <div id="map" role="application" aria-label="Interactive map. Search locations worldwide; UP NOAH rainfall imagery covers the Philippines. Click a point to inspect enabled hazard layers."></div>
+        <div class="map-legend" aria-label="Map information">
+          <span><i class="legend-dot rainfall-dot"></i> UP NOAH rainfall overlay</span>
+          <span><i class="legend-dot typhoon-dot"></i> PAGASA storm position</span>
+          <span><i class="legend-dot earthquake-dot"></i> Recent earthquakes</span>
+          <span>Base map © OpenStreetMap</span>
+        </div>
+      </section>
+
+      <aside class="map-sidebar" aria-label="Map controls and selected location">
+        <section class="map-card noah-card" aria-labelledby="noah-title">
+          <div class="side-card-heading">
+            <div>
+              <p class="map-kicker">OFFICIAL RAINFALL DATA</p>
+              <h2 id="noah-title">UP NOAH rainfall</h2>
+            </div>
+            <span class="noah-mark" aria-hidden="true">N</span>
+          </div>
+          <p class="card-description">Show rainfall contour imagery published by the University of the Philippines Nationwide Operational Assessment of Hazards.</p>
+          <label class="field-label" for="noah-period">Rainfall product</label>
+          <select id="noah-period" class="map-select">
+            <option value="1hr">Latest · 1 hour</option>
+            <option value="3hr">Latest · 3 hours</option>
+            <option value="6hr">Latest · 6 hours</option>
+            <option value="12hr">Latest · 12 hours</option>
+            <option value="24hr">Latest · 24 hours</option>
+            <option value="forecast">Day 1 rainfall forecast</option>
+          </select>
+          <label class="toggle-row" for="noah-enabled">
+            <input id="noah-enabled" type="checkbox" checked>
+            <span>Show rainfall overlay</span>
+          </label>
+          <p class="layer-status" id="noah-note" role="status">Loading UP NOAH rainfall overlay…</p>
+        </section>
+
+        <section class="map-card typhoon-card" aria-labelledby="typhoon-title">
+          <div class="side-card-heading">
+            <div>
+              <p class="map-kicker">OFFICIAL STORM POSITION</p>
+              <h2 id="typhoon-title">Typhoon tracker</h2>
+            </div>
+            <span class="typhoon-badge" id="typhoon-badge">Checking</span>
+          </div>
+          <div class="typhoon-details" id="typhoon-details" aria-live="polite">
+            <p class="muted">Loading the latest PAGASA cyclone bulletin…</p>
+          </div>
+          <a class="typhoon-track-link" id="typhoon-track-link" target="_blank" rel="noopener noreferrer" hidden>
+            <img class="typhoon-track-image" id="typhoon-track-image" alt="PAGASA official tropical cyclone forecast track">
+            <span>Open PAGASA track image ↗</span>
+          </a>
+          <a class="typhoon-bulletin-link" href="https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin" target="_blank" rel="noopener noreferrer">Official PAGASA bulletin ↗</a>
+          <div class="typhoon-actions">
+            <button class="btn px" id="typhoon-focus" type="button" disabled>Focus on map</button>
+            <button class="btn px" id="typhoon-refresh" type="button">Refresh</button>
+          </div>
+          <p class="layer-status" id="typhoon-note" role="status">PAGASA is the official source for Philippine cyclone warnings.</p>
+        </section>
+
+        <section class="map-card spot-card" id="check" aria-live="polite" aria-labelledby="spot-title">
+          <p class="map-kicker">MAP INSPECTION</p>
+          <h2 id="spot-title">Selected location</h2>
+          <p class="spot-coordinates" id="spot-coordinates">Choose a point on the map.</p>
+          <ul class="spot-results" id="spot-results">
+            <li>Click the map to inspect enabled hazard layers.</li>
+          </ul>
+        </section>
+
+        <section class="map-card hazard-card" aria-labelledby="hazard-title">
+          <div class="side-card-heading">
+            <div>
+              <p class="map-kicker">LOCAL DATA LAYERS</p>
+              <h2 id="hazard-title">Hazards</h2>
+            </div>
+            <span class="layer-count" id="layer-count">Loading</span>
+          </div>
+          <p class="card-description">Toggle available earthquake, fault, flood, and landslide datasets.</p>
+          <div id="layers" class="hazard-layer-list" aria-live="polite">
+            <p class="muted">Loading hazard layers…</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="map-notice" aria-label="Data guidance">
+      <strong>Use data with care.</strong>
+      UP NOAH rainfall contours describe rainfall products, not local flood depth or evacuation advice. The typhoon marker and track graphic follow PAGASA's latest bulletin; forecasts can change. Local susceptibility files may be incomplete; the included flood polygon is a sample. Follow official PAGASA and PHIVOLCS guidance during emergencies.
+    </section>
+
+    <footer class="map-attribution">
+      <p>Rainfall contour imagery © <a href="https://noah.up.edu.ph/" target="_blank" rel="noopener noreferrer">UP NOAH</a> · <a href="https://noah.up.edu.ph/weather-updates/rainfall-contour" target="_blank" rel="noopener noreferrer">Official rainfall updates</a></p>
+      <p>Base map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>. Other hazard data sources are listed with their layers.</p>
+    </footer>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="common.js?v=20261021-search-2"></script>
+  <script src="map.js?v=20261021-search"></script>
+</body>
+</html>

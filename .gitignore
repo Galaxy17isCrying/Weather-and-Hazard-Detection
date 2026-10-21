@@ -1,0 +1,26 @@
+# Environment variables and local credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python environments and generated files
+venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Local editor and operating-system files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local databases, logs, and temporary files
+*.sqlite
+*.sqlite3
+*.db
+*.log
+*.tmp
