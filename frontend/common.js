@@ -1,5 +1,58 @@
 const $=s=>document.querySelector(s);
-const api=async(u,o)=>{const r=await fetch(u,o);if(!r.ok)throw new Error((await r.json().catch(()=>({}))).detail||r.statusText);return r.json()};
+// ---- Static-hosting API layer (works on Vercel, no backend/MySQL needed) ----
+const _json=async(url,opts)=>{
+  const r=await fetch(url,opts);
+  if(!r.ok)throw new Error(`Request failed (${r.status})`);
+  return r.json();
+};
+const _geocode=async(q,opts={})=>{
+  q=q.trim();
+  if(q.length<2)return [];
+  try{
+    const d=await _json("https://geocoding-api.open-meteo.com/v1/search?"+new URLSearchParams({name:q,count:6,language:"en"}),opts);
+    if(d.results&&d.results.length)return d.results.map(x=>({name:x.name,admin:x.admin1||"",country:x.country||"",lat:x.latitude,lon:x.longitude}));
+  }catch(e){if(e.name==="AbortError")throw e}
+  const d=await _json("https://photon.komoot.io/api/?"+new URLSearchParams({q,limit:6}),opts);
+  return (d.features||[]).map(f=>{
+    const p=f.properties||{},c=(f.geometry||{}).coordinates;
+    const name=p.name||p.city||p.state;
+    if(!name||!Array.isArray(c)||c.length<2)return null;
+    return {name,admin:p.state||p.county||"",country:p.country||"",lat:c[1],lon:c[0]};
+  }).filter(Boolean);
+};
+const _weather=(lat,lon,units)=>{
+  const imp=units==="imperial";
+  return _json("https://api.open-meteo.com/v1/forecast?"+new URLSearchParams({
+    latitude:lat,longitude:lon,timezone:"auto",forecast_days:7,forecast_hours:24,
+    current:"temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,is_day",
+    hourly:"precipitation_probability,temperature_2m",
+    daily:"weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset",
+    temperature_unit:imp?"fahrenheit":"celsius",wind_speed_unit:imp?"mph":"kmh",precipitation_unit:imp?"inch":"mm"
+  }));
+};
+// Saved places live in this browser's localStorage instead of MySQL.
+const _savedGet=()=>{try{return JSON.parse(localStorage.getItem("saved_places")||"[]")}catch(e){return []}};
+const _savedSet=list=>{localStorage.setItem("saved_places",JSON.stringify(list));return list};
+const api=async(u,o={})=>{
+  const url=new URL(u,location.origin),method=(o.method||"GET").toUpperCase();
+  if(url.pathname==="/api/geocode")return _geocode(url.searchParams.get("q")||"",{signal:o.signal});
+  if(url.pathname==="/api/weather")return _weather(url.searchParams.get("lat"),url.searchParams.get("lon"),url.searchParams.get("units"));
+  if(url.pathname==="/api/locations"){
+    if(method==="POST"){
+      const b=JSON.parse(o.body),list=_savedGet();
+      if(!list.some(p=>Math.abs(p.latitude-b.latitude)<1e-4&&Math.abs(p.longitude-b.longitude)<1e-4))
+        list.unshift({id:Date.now(),name:b.name,country:b.country,latitude:b.latitude,longitude:b.longitude});
+      return _savedSet(list);
+    }
+    return _savedGet();
+  }
+  const del=url.pathname.match(/^\/api\/locations\/(\d+)$/);
+  if(del&&method==="DELETE")return _savedSet(_savedGet().filter(p=>String(p.id)!==del[1]));
+  // everything else (map page) still goes to a backend if one exists
+  const r=await fetch(u,o);
+  if(!r.ok)throw new Error((await r.json().catch(()=>({}))).detail||r.statusText||`Request failed (${r.status})`);
+  return r.json();
+};
 const shared={units:localStorage.getItem("units")==="imperial"?"imperial":"metric",
   loc:JSON.parse(localStorage.getItem("loc")||'{"name":"Marikina City","admin":"","country":"Philippines","lat":14.6507,"lon":121.1029}')};
 const setLoc=l=>{shared.loc=l;localStorage.setItem("loc",JSON.stringify(l))};
