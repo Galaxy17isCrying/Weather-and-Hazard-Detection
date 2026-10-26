@@ -33,6 +33,25 @@ const _weather=(lat,lon,units)=>{
 // Saved places live in this browser's localStorage instead of MySQL.
 const _savedGet=()=>{try{return JSON.parse(localStorage.getItem("saved_places")||"[]")}catch(e){return []}};
 const _savedSet=list=>{localStorage.setItem("saved_places",JSON.stringify(list));return list};
+// ---- Hazard map layers and data ----
+const _HAZARD_LAYERS=[
+  {slug:"flood",label:"Flood susceptibility",color:"#2b7de9",source_name:"UP NOAH / MGB",source_url:"https://noah.up.edu.ph",kind:"susceptibility",description:"Static susceptibility map, not live flood monitoring."},
+  {slug:"landslide",label:"Landslide susceptibility",color:"#a0522d",source_name:"Mines and Geosciences Bureau",source_url:"https://www.mgb.gov.ph",kind:"susceptibility",description:"Static susceptibility map."},
+  {slug:"faults",label:"Active faults",color:"#d62828",source_name:"PHIVOLCS FaultFinder",source_url:"https://faultfinder.phivolcs.dost.gov.ph",kind:"susceptibility",description:"Fault lines. Load GeoJSON from PHIVOLCS."},
+  {slug:"earthquake",label:"Recent earthquakes",color:"#f77f00",source_name:"USGS Earthquake Feed",source_url:"https://earthquake.usgs.gov",kind:"live",description:"Live feed. Official local reports: PHIVOLCS."}
+];
+const _HAZARD_DATA={
+  faults:{type:"FeatureCollection",features:[]},
+  landslide:{type:"FeatureCollection",features:[]},
+  flood:{type:"FeatureCollection",features:[{type:"Feature",properties:{name:"SAMPLE ONLY: Marikina River corridor",level:"High"},
+    geometry:{type:"Polygon",coordinates:[[[121.095,14.600],[121.115,14.600],[121.115,14.660],[121.095,14.660],[121.095,14.600]]]}}]}
+};
+const _earthquakes=(days=7,minmag=2.5)=>{
+  const start=new Date(Date.now()-days*864e5).toISOString().slice(0,19);
+  return _json("https://earthquake.usgs.gov/fdsnws/event/1/query?"+new URLSearchParams({
+    format:"geojson",starttime:start,minmagnitude:minmag,
+    minlatitude:4,maxlatitude:22,minlongitude:114,maxlongitude:128}));
+};
 const api=async(u,o={})=>{
   const url=new URL(u,location.origin),method=(o.method||"GET").toUpperCase();
   if(url.pathname==="/api/geocode")return _geocode(url.searchParams.get("q")||"",{signal:o.signal});
@@ -48,6 +67,17 @@ const api=async(u,o={})=>{
   }
   const del=url.pathname.match(/^\/api\/locations\/(\d+)$/);
   if(del&&method==="DELETE")return _savedSet(_savedGet().filter(p=>String(p.id)!==del[1]));
+  // ---- Hazard map data (no backend needed) ----
+  if(url.pathname==="/api/hazard-layers")return _HAZARD_LAYERS;
+  if(url.pathname==="/api/earthquakes")return _earthquakes();
+  const hz=url.pathname.match(/^\/api\/hazards\/([A-Za-z0-9_]+)$/);
+  if(hz){
+    if(!(hz[1] in _HAZARD_DATA))throw new Error(`No dataset for '${hz[1]}'`);
+    return _HAZARD_DATA[hz[1]];
+  }
+  if(url.pathname==="/api/typhoon")return {active:false,
+    message:"Live typhoon tracking isn't available on this site. Please check the official PAGASA bulletin.",
+    bulletin_url:"https://www.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin"};
   // everything else (map page) still goes to a backend if one exists
   const r=await fetch(u,o);
   if(!r.ok)throw new Error((await r.json().catch(()=>({}))).detail||r.statusText||`Request failed (${r.status})`);
